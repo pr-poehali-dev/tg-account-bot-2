@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
 /* ─────────────────────────────── DATA ────────────────────────────────── */
@@ -86,7 +86,18 @@ export default function Index() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [activeWork, setActiveWork] = useState(0);
+  const [token, setToken] = useState("");
+  const [tokenVisible, setTokenVisible] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  const handleCopyToken = useCallback(() => {
+    if (!token) return;
+    navigator.clipboard.writeText(token).then(() => {
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 2000);
+    });
+  }, [token]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -527,6 +538,47 @@ export default function Index() {
           <p className="text-muted-foreground text-lg font-light max-w-lg mx-auto mb-12 leading-relaxed">
             Расскажите о своей идее. Первая консультация — бесплатно. Отвечаем в течение 2 часов.
           </p>
+
+          {/* Token field */}
+          <div className="mb-8 max-w-md mx-auto">
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+              Токен доступа
+            </p>
+            <div className="relative flex items-center border border-border bg-background/60 backdrop-blur-sm focus-within:border-gold/50 transition-colors duration-300">
+              <Icon
+                name="KeyRound"
+                size={14}
+                className="ml-4 text-muted-foreground flex-shrink-0"
+              />
+              <input
+                type={tokenVisible ? "text" : "password"}
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Введите токен..."
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 py-3.5 px-3 outline-none font-ibm tracking-wide"
+              />
+              <button
+                onClick={() => setTokenVisible((v) => !v)}
+                className="p-3 text-muted-foreground hover:text-gold transition-colors duration-300"
+                title={tokenVisible ? "Скрыть" : "Показать"}
+              >
+                <Icon name={tokenVisible ? "EyeOff" : "Eye"} size={14} />
+              </button>
+              <button
+                onClick={handleCopyToken}
+                disabled={!token}
+                className="p-3 border-l border-border text-muted-foreground hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-300"
+                title="Скопировать"
+              >
+                <Icon name={tokenCopied ? "Check" : "Copy"} size={14} className={tokenCopied ? "text-gold" : ""} />
+              </button>
+            </div>
+            {token && (
+              <p className="text-xs text-gold/70 mt-2 text-left tracking-wide">
+                {tokenCopied ? "✓ Скопировано" : `${token.length} символов`}
+              </p>
+            )}
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <button className="btn-primary text-sm py-4 px-8">
